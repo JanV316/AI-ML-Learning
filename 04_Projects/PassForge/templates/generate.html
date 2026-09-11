@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Password & Passphrase Generator | PassForge{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 650px; margin: 0 auto;">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">Secure Password & Passphrase Generator</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Generates random secrets using Python's cryptographically secure <code>secrets</code> module.</p>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="flash-alert flash-danger">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form action="{{ url_for('generate') }}" method="POST">
+    
+    <!-- Mode Selection -->
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.25rem;">
+      <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); cursor: pointer;">
+        <input type="radio" name="mode" value="password" {% if mode != 'passphrase' %}checked{% endif %} onclick="document.getElementById('passwordOpts').style.display='block'; document.getElementById('passphraseOpts').style.display='none';"> Random Password
+      </label>
+
+      <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); cursor: pointer;">
+        <input type="radio" name="mode" value="passphrase" {% if mode == 'passphrase' %}checked{% endif %} onclick="document.getElementById('passwordOpts').style.display='none'; document.getElementById('passphraseOpts').style.display='block';"> Multi-Word Passphrase
+      </label>
+    </div>
+
+    <!-- Password Options -->
+    <div id="passwordOpts" style="display: {% if mode == 'passphrase' %}none{% else %}block{% endif %};">
+      <div class="form-group">
+        <label for="length" class="form-label">Password Length (Minimum 8):</label>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('length').value=12">12 Chars</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('length').value=16">16 Chars</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('length').value=24">24 Chars</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('length').value=32">32 Chars</button>
+        </div>
+        <input type="number" id="length" name="length" class="form-control" value="{{ default_length or 16 }}" min="8" max="128">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <label style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+          <input type="checkbox" name="use_uppercase" {% if use_uppercase %}checked{% endif %}> Uppercase (A-Z)
+        </label>
+        <label style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+          <input type="checkbox" name="use_lowercase" {% if use_lowercase %}checked{% endif %}> Lowercase (a-z)
+        </label>
+        <label style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+          <input type="checkbox" name="use_digits" {% if use_digits %}checked{% endif %}> Numbers (0-9)
+        </label>
+        <label style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+          <input type="checkbox" name="use_symbols" {% if use_symbols %}checked{% endif %}> Special Symbols (!@#$)
+        </label>
+      </div>
+    </div>
+
+    <!-- Passphrase Options -->
+    <div id="passphraseOpts" style="display: {% if mode == 'passphrase' %}block{% else %}none{% endif %};">
+      <div class="form-group">
+        <label for="num_words" class="form-label">Number of Words:</label>
+        <select id="num_words" name="num_words" class="form-control">
+          <option value="3">3 Words</option>
+          <option value="4" selected>4 Words (Recommended)</option>
+          <option value="5">5 Words</option>
+          <option value="6">6 Words</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">Generate Secret</button>
+  </form>
+
+  {% if generated_password %}
+  <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+    <label class="form-label">Generated Output:</label>
+    
+    <div style="background-color: var(--bg-input); border: 1px dashed var(--accent-gold); border-radius: var(--radius-sm); padding: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <span id="genSecret" class="password-field" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-gold); word-break: break-all;">{{ generated_password }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard(document.getElementById('genSecret').innerText, this)">Copy</button>
+    </div>
+
+    {% if session.get('user_id') %}
+    <div style="text-align: right; margin-bottom: 1.25rem;">
+      <a href="{{ url_for('vault_add', preset_pwd=generated_password) }}" class="btn btn-primary btn-sm">+ Save to Personal Vault</a>
+    </div>
+    {% endif %}
+
+    <!-- Character Metrics Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.75rem;">
+      <div style="background-color: var(--bg-input); padding: 0.65rem; border-radius: var(--radius-sm); text-align: center;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Total Length</span>
+        <strong style="font-size: 1rem; color: var(--text-main);">{{ length }}</strong>
+      </div>
+      <div style="background-color: var(--bg-input); padding: 0.65rem; border-radius: var(--radius-sm); text-align: center;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Uppercase</span>
+        <strong style="font-size: 1rem; color: var(--accent-success);">{{ uppercase_count }}</strong>
+      </div>
+      <div style="background-color: var(--bg-input); padding: 0.65rem; border-radius: var(--radius-sm); text-align: center;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Lowercase</span>
+        <strong style="font-size: 1rem; color: var(--accent-success);">{{ lowercase_count }}</strong>
+      </div>
+      <div style="background-color: var(--bg-input); padding: 0.65rem; border-radius: var(--radius-sm); text-align: center;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Numbers</span>
+        <strong style="font-size: 1rem; color: var(--accent-success);">{{ digit_count }}</strong>
+      </div>
+      <div style="background-color: var(--bg-input); padding: 0.65rem; border-radius: var(--radius-sm); text-align: center;">
+        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Symbols</span>
+        <strong style="font-size: 1rem; color: var(--accent-success);">{{ special_count }}</strong>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

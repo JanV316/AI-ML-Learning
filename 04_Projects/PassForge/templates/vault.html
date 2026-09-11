@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Personal Vault | PassForge{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">Personal Credential Vault</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Encrypted secrets payload stored locally with Fernet symmetric keys.</p>
+    </div>
+    
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <input type="text" id="vaultSearch" class="form-control" placeholder="Search credentials..." style="width: 220px; padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+      <a href="{{ url_for('vault_add') }}" class="btn btn-primary btn-sm">+ Add Credential</a>
+    </div>
+  </div>
+
+  {% if credentials %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Service Name</th>
+        <th>Username / Email</th>
+        <th>Encrypted Password</th>
+        <th>Updated</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in credentials %}
+      <tr class="vault-row">
+        <td>
+          <strong>{{ c.service_name }}</strong>
+          {% if c.url %}
+          <br><a href="{{ c.url if c.url.startswith('http') else 'https://' + c.url }}" target="_blank" rel="noopener" style="font-size: 0.75rem; color: var(--text-muted);">{{ c.url }}</a>
+          {% endif %}
+        </td>
+        <td>{{ c.username_or_email }}</td>
+        <td>
+          <span id="pwd-cell-{{ c.id }}" class="password-field" data-state="masked" style="color: var(--text-muted);">••••••••••••</span>
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ c.updated_at[:10] }}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="revealPassword({{ c.id }}, this)">Reveal</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="copySecret({{ c.id }}, this)">Copy</button>
+          <a href="{{ url_for('vault_edit', cred_id=c.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+          
+          <form action="{{ url_for('vault_delete', cred_id=c.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete credential for {{ c.service_name }}?');">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem;">
+    <div style="font-size: 2.5rem; margin-bottom: 0.75rem; color: var(--text-dim);">🛡️</div>
+    <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Your Vault is Empty</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Store service logins and credentials safely with Fernet AES encryption.</p>
+    <a href="{{ url_for('vault_add') }}" class="btn btn-primary">+ Add Your First Credential</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | PassForge Vault{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+  <div>
+    <h1 style="font-size: 1.6rem; font-weight: 700;">Security Health Overview</h1>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">Personal Credential Vault & Assessment for {{ session.get('username') }}</p>
+  </div>
+  
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('vault_add') }}" class="btn btn-primary btn-sm">+ Add Credential</a>
+    <a href="{{ url_for('generate') }}" class="btn btn-secondary btn-sm">Generator</a>
+    <a href="{{ url_for('analyze') }}" class="btn btn-secondary btn-sm">Analyzer</a>
+  </div>
+</div>
+
+<!-- Metrics Cards Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+  
+  <div class="panel" style="margin-bottom: 0;">
+    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Total Saved Credentials</span>
+    <strong style="font-size: 1.8rem; color: var(--text-main);">{{ health.total_credentials }}</strong>
+  </div>
+
+  <div class="panel" style="margin-bottom: 0;">
+    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Strong Passwords</span>
+    <strong style="font-size: 1.8rem; color: var(--accent-success);">{{ health.strong_count }}</strong>
+  </div>
+
+  <div class="panel" style="margin-bottom: 0;">
+    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Weak Passwords</span>
+    <strong style="font-size: 1.8rem; color: {% if health.weak_count > 0 %}var(--accent-danger){% else %}var(--text-main){% endif %};">{{ health.weak_count }}</strong>
+  </div>
+
+  <div class="panel" style="margin-bottom: 0;">
+    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Items Needing Attention</span>
+    <strong style="font-size: 1.8rem; color: {% if health.attention_count > 0 %}var(--accent-warning){% else %}var(--text-main){% endif %};">{{ health.attention_count }}</strong>
+  </div>
+
+</div>
+
+<!-- Main Dashboard Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+  
+  <!-- Recent Vault Activity Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2 class="panel-title">Saved Credentials</h2>
+      <a href="{{ url_for('vault') }}" class="btn btn-secondary btn-sm">View Vault &rarr;</a>
+    </div>
+
+    {% if recent_credentials %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Username / Email</th>
+          <th>Password</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_credentials %}
+        <tr>
+          <td><strong>{{ c.service_name }}</strong></td>
+          <td>{{ c.username_or_email }}</td>
+          <td class="password-field" style="color: var(--text-dim);">••••••••••••</td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">{{ c.updated_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="font-size: 0.9rem; color: var(--text-muted); padding: 1rem 0;">No credentials saved yet. Click "+ Add Credential" to store your first login secret.</p>
+    {% endif %}
+  </div>
+
+  <!-- Security Attention Warnings Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2 class="panel-title">Security Health</h2>
+      <a href="{{ url_for('security_health') }}" class="btn btn-secondary btn-sm">Assessment</a>
+    </div>
+
+    {% if health.attention_items %}
+    <div style="margin-bottom: 1rem;">
+      <span class="badge badge-warning" style="margin-bottom: 0.5rem;">Attention Needed</span>
+      <ul style="padding-left: 1.1rem; font-size: 0.85rem; color: var(--text-muted);">
+        {% for item in health.attention_items[:5] %}
+        <li style="margin-bottom: 0.35rem;"><strong>{{ item.service_name }}</strong>: {{ item.issue }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div style="padding: 1rem 0; text-align: center;">
+      <span class="badge badge-success" style="margin-bottom: 0.5rem;">Vault Healthy</span>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">No weak or common dictionary passwords detected in saved credentials.</p>
+    </div>
+    {% endif %}
+
+    {% if health.reused_services_count > 0 %}
+    <div style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); padding: 0.75rem; border-radius: var(--radius-sm); margin-top: 1rem;">
+      <span style="font-size: 0.8rem; color: #fca5a5; font-weight: 600;">⚠ Password Reuse Warning</span>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Identical password reused across {{ health.reused_services_count }} services.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Security Health | PassForge Vault{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">Password Health Assessment</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Vault-wide analysis using rule scoring, entropy calculation, and password reuse checks.</p>
+    </div>
+    <span class="badge {% if health.health_score >= 80 %}badge-success{% elif health.health_score >= 50 %}badge-warning{% else %}badge-danger{% endif %}" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">
+      Health Score: {{ health.health_score }} / 100
+    </span>
+  </div>
+
+  <!-- Summary Cards Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div style="background-color: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Total Vault Credentials</span>
+      <strong style="font-size: 1.5rem; color: var(--text-main);">{{ health.total_credentials }}</strong>
+    </div>
+
+    <div style="background-color: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Strong Passwords</span>
+      <strong style="font-size: 1.5rem; color: var(--accent-success);">{{ health.strong_count }}</strong>
+    </div>
+
+    <div style="background-color: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Weak Passwords</span>
+      <strong style="font-size: 1.5rem; color: {% if health.weak_count > 0 %}var(--accent-danger){% else %}var(--text-main){% endif %};">{{ health.weak_count }}</strong>
+    </div>
+
+    <div style="background-color: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Reused Passwords</span>
+      <strong style="font-size: 1.5rem; color: {% if health.reused_services_count > 0 %}var(--accent-danger){% else %}var(--accent-success){% endif %};">{{ health.reused_services_count }}</strong>
+    </div>
+  </div>
+
+  <!-- Attention Items Table -->
+  <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">Credentials Requiring Attention</h2>
+  
+  {% if health.attention_items %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Service Name</th>
+        <th>Security Concern</th>
+        <th style="text-align: right;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in health.attention_items %}
+      <tr>
+        <td><strong>{{ item.service_name }}</strong></td>
+        <td><span class="badge badge-warning">{{ item.issue }}</span></td>
+        <td style="text-align: right;">
+          <a href="{{ url_for('vault_edit', cred_id=item.id) }}" class="btn btn-secondary btn-sm">Update Credential</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="background-color: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.3); padding: 1.25rem; border-radius: var(--radius-sm); color: #34d399;">
+    ✓ Excellent! No weak, common, or repeated passwords detected in your credential vault.
+  </div>
+  {% endif %}
+
+  <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1.5rem; font-style: italic;">
+    Security health evaluations are educational estimates computed locally by PassForge analyzer.py and do not guarantee real-world immunity against attacks.
+  </p>
+</div>
+{% endblock %}

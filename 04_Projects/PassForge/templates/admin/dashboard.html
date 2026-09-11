@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Overview | PassForge Security{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">Administrator Overview</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">System user metadata and security audit monitoring.</p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('admin_users') }}" class="btn btn-secondary btn-sm">User Management</a>
+      <a href="{{ url_for('admin_activity') }}" class="btn btn-secondary btn-sm">Audit Event Log</a>
+    </div>
+  </div>
+
+  <!-- Admin Stats Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Total Registered Users</span>
+      <strong style="font-size: 1.8rem; color: var(--text-main);">{{ total_users }}</strong>
+    </div>
+
+    <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Active Users</span>
+      <strong style="font-size: 1.8rem; color: var(--accent-success);">{{ active_users }}</strong>
+    </div>
+  </div>
+
+  <!-- Security Audit Policy Note -->
+  <div style="background-color: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+    <h3 style="font-size: 0.95rem; color: var(--accent-warning); margin-bottom: 0.25rem;">🔒 Zero-Knowledge Administrative Policy</h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">
+      Administrators can inspect account metadata and security audit events. Administrators <strong>cannot</strong> view or decrypt user vault passwords because vault secrets are encrypted with keys derived from individual user passwords.
+    </p>
+  </div>
+
+  <!-- Recent Audit Logs Table -->
+  <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">Recent Security Events</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Event ID</th>
+        <th>Username</th>
+        <th>Event Type</th>
+        <th>IP Address</th>
+        <th>Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in recent_events %}
+      <tr>
+        <td style="color: var(--text-dim);">#{{ event.id }}</td>
+        <td><strong>{{ event.username }}</strong></td>
+        <td>
+          <span class="badge {% if 'SUCCESS' in event.event_type or 'CREATED' in event.event_type %}badge-success{% elif 'FAILED' in event.event_type or 'BLOCKED' in event.event_type %}badge-danger{% else %}badge-info{% endif %}">
+            {{ event.event_type }}
+          </span>
+        </td>
+        <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">{{ event.ip_address or '127.0.0.1' }}</td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ event.created_at[:19] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

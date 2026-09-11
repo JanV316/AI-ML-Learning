@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}User Management | Admin PassForge{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">User Account Management</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Manage user accounts, roles, and status (Activate / Deactivate).</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm">&larr; Admin Overview</a>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email Address</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Created Timestamp</th>
+        <th style="text-align: right;">Account Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="color: var(--text-dim);">#{{ u.id }}</td>
+        <td><strong>{{ u.username }}</strong></td>
+        <td>{{ u.email }}</td>
+        <td>
+          <span class="badge {% if u.role == 'ADMIN' %}badge-warning{% else %}badge-info{% endif %}">{{ u.role }}</span>
+        </td>
+        <td>
+          <span class="badge {% if u.is_active %}badge-success{% else %}badge-danger{% endif %}">
+            {{ 'Active' if u.is_active else 'Deactivated' }}
+          </span>
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ u.created_at[:19] }}</td>
+        <td style="text-align: right;">
+          {% if u.id != session.get('user_id') %}
+          <form action="{{ url_for('admin_user_toggle', user_id=u.id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn {% if u.is_active %}btn-danger{% else %}btn-secondary{% endif %} btn-sm">
+              {{ 'Deactivate' if u.is_active else 'Activate' }}
+            </button>
+          </form>
+          {% else %}
+          <span style="font-size: 0.8rem; color: var(--text-dim);">(Current User)</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

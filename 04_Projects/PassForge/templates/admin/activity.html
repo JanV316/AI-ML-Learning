@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Security Audit Activity | Admin PassForge{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h1 class="panel-title" style="font-size: 1.3rem;">Security Audit Event Log</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Real-time log of security events, authentications, and vault operations.</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm">&larr; Admin Overview</a>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User ID</th>
+        <th>Username</th>
+        <th>Event Type</th>
+        <th>IP Address</th>
+        <th>Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      <tr>
+        <td style="color: var(--text-dim);">#{{ event.id }}</td>
+        <td>{{ event.user_id or '-' }}</td>
+        <td><strong>{{ event.username }}</strong></td>
+        <td>
+          <span class="badge {% if 'SUCCESS' in event.event_type or 'CREATED' in event.event_type %}badge-success{% elif 'FAILED' in event.event_type or 'BLOCKED' in event.event_type %}badge-danger{% else %}badge-info{% endif %}">
+            {{ event.event_type }}
+          </span>
+        </td>
+        <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">{{ event.ip_address or '127.0.0.1' }}</td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">{{ event.created_at[:19] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

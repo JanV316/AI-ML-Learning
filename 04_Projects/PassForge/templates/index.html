@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | PassForge Security Toolkit{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1 class="hero-title">PassForge</h1>
+  <p class="hero-subtitle">Generate, analyze, and securely hash passwords using Python.</p>
+</section>
+
+<!-- 4 Navigation Cards Grid -->
+<div class="grid-2x2">
+  
+  <div class="card card-hover">
+    <div class="card-icon">🔑</div>
+    <h2 class="card-title">Generate Password</h2>
+    <p class="card-desc">Generate secure, random passwords with custom lengths and guaranteed character diversity using Python's <code>secrets</code> module.</p>
+    <a href="{{ url_for('generate') }}" class="btn btn-primary">Generate &rarr;</a>
+  </div>
+
+  <div class="card card-hover">
+    <div class="card-icon">📊</div>
+    <h2 class="card-title">Analyze Password</h2>
+    <p class="card-desc">Evaluate theoretical entropy, strength classification, dictionary matches, and common weak pattern vulnerabilities.</p>
+    <a href="{{ url_for('analyze') }}" class="btn btn-primary">Analyze &rarr;</a>
+  </div>
+
+  <div class="card card-hover">
+    <div class="card-icon">🔒</div>
+    <h2 class="card-title">Hash Password</h2>
+    <p class="card-desc">Compute cryptographically salt-protected PBKDF2-HMAC-SHA256 password hashes with 600,000 iterations.</p>
+    <a href="{{ url_for('hash_view') }}" class="btn btn-primary">Hash &rarr;</a>
+  </div>
+
+  <div class="card card-hover">
+    <div class="card-icon">✅</div>
+    <h2 class="card-title">Verify Password</h2>
+    <p class="card-desc">Verify candidate passwords against stored salts and hashes in constant time using <code>hmac.compare_digest</code>.</p>
+    <a href="{{ url_for('verify') }}" class="btn btn-primary">Verify &rarr;</a>
+  </div>
+
+</div>
+
+<!-- Educational Overview Section -->
+<div class="card" style="margin-top: 2rem;">
+  <h2 class="card-title" style="font-size: 1.5rem; margin-bottom: 1rem;">🛡️ Security Concepts Overview</h2>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+    <div>
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 0.25rem;">Secure Randomness</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Uses operating system entropy sources via <code>secrets.SystemRandom</code> rather than pseudo-random numbers.</p>
+    </div>
+
+    <div>
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 0.25rem;">Rule-Based Analysis</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Detects dictionary passwords, repeated characters, ascending/descending sequences, and repeating substrings.</p>
+    </div>
+
+    <div>
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 0.25rem;">Theoretical Entropy</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Estimates bit strength using $E = L \times \log_2(R)$ based on active character pool size.</p>
+    </div>
+
+    <div>
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 0.25rem;">Salted PBKDF2 Hashing</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Protects hashes against rainbow table attacks using 16-byte random salts and 600,000 PBKDF2 iterations.</p>
+    </div>
+
+    <div>
+      <h3 style="font-size: 1rem; color: var(--accent-primary); margin-bottom: 0.25rem;">Constant-Time Check</h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">Compares password hashes in constant time to prevent timing side-channel attacks.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Password Analyzer | PassForge{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 750px; margin: 0 auto;">
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+    <span style="font-size: 2rem;">📊</span>
+    <div>
+      <h1 style="font-size: 1.5rem; font-weight: 700;">Password Analyzer</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Evaluate password length, character set diversity, weak pattern risks, and theoretical entropy.</p>
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="alert alert-danger">
+    <span>⚠</span>
+    <span>{{ error }}</span>
+  </div>
+  {% endif %}
+
+  <form action="{{ url_for('analyze') }}" method="POST">
+    <div class="form-group">
+      <label for="passwordInput" class="form-label">Enter Password to Analyze:</label>
+      <div class="password-input-group">
+        <input type="password" id="passwordInput" name="password" class="form-control" placeholder="Enter password..." required>
+        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('passwordInput', this)">Show</button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">Analyze Password</button>
+  </form>
+
+  {% if result %}
+  <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem;">Analysis Results</h2>
+
+    <!-- Summary Score Header -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+      
+      <!-- Strength Badge Card -->
+      <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <span style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Overall Strength</span>
+        {% if result.strength == 'Weak' %}
+          <span class="badge badge-weak">Weak</span>
+        {% elif result.strength == 'Moderate' %}
+          <span class="badge badge-moderate">Moderate</span>
+        {% elif result.strength == 'Strong' %}
+          <span class="badge badge-strong">Strong</span>
+        {% else %}
+          <span class="badge badge-very-strong">Very Strong</span>
+        {% endif %}
+      </div>
+
+      <!-- Score Bar Card -->
+      <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Rule-Based Score</span>
+          <strong style="color: var(--text-main);">{{ result.score }} / 7</strong>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" style="width: {{ (result.score / 7 * 100)|round }}%; background-color: {% if result.score <= 2 %}var(--accent-danger){% elif result.score <= 4 %}var(--accent-warning){% elif result.score <= 6 %}var(--accent-success){% else %}var(--accent-primary){% endif %};"></div>
+        </div>
+      </div>
+
+      <!-- Entropy Card -->
+      <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <span style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">Theoretical Entropy</span>
+        <strong style="font-size: 1.2rem; color: var(--accent-primary);">{{ "%.2f"|format(result.entropy) }} bits</strong>
+        <span style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Level: {{ result.entropy | round | int }} ({{ result.strength }})</span>
+      </div>
+
+    </div>
+
+    <!-- Character Types & Pattern Checks Grids -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+      
+      <!-- Character Set Diversity -->
+      <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main);">Character Diversity</h3>
+        <ul style="list-style: none;">
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Length (>= 12)</span>
+            <strong>{{ result.length }}</strong>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Uppercase Letter</span>
+            <span style="color: {% if result.uppercase %}var(--accent-success){% else %}var(--accent-danger){% endif %}; font-weight: 700;">{% if result.uppercase %}✓ Yes{% else %}✗ No{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Lowercase Letter</span>
+            <span style="color: {% if result.lowercase %}var(--accent-success){% else %}var(--accent-danger){% endif %}; font-weight: 700;">{% if result.lowercase %}✓ Yes{% else %}✗ No{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Numeric Digit</span>
+            <span style="color: {% if result.digit %}var(--accent-success){% else %}var(--accent-danger){% endif %}; font-weight: 700;">{% if result.digit %}✓ Yes{% else %}✗ No{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0;">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Special Symbol</span>
+            <span style="color: {% if result.special %}var(--accent-success){% else %}var(--accent-danger){% endif %}; font-weight: 700;">{% if result.special %}✓ Yes{% else %}✗ No{% endif %}</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Risk Indicator Checks -->
+      <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main);">Pattern & Risk Indicators</h3>
+        <ul style="list-style: none;">
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Common Password</span>
+            <span style="color: {% if result.common %}var(--accent-danger){% else %}var(--accent-success){% endif %}; font-weight: 700;">{% if result.common %}⚠ Detected{% else %}✓ Clear{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Repeated Characters</span>
+            <span style="color: {% if result.repeated %}var(--accent-warning){% else %}var(--accent-success){% endif %}; font-weight: 700;">{% if result.repeated %}⚠ Detected{% else %}✓ Clear{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Sequential Sequence</span>
+            <span style="color: {% if result.sequential %}var(--accent-warning){% else %}var(--accent-success){% endif %}; font-weight: 700;">{% if result.sequential %}⚠ Detected{% else %}✓ Clear{% endif %}</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 0.35rem 0;">
+            <span style="font-size: 0.9rem; color: var(--text-muted);">Repeated Substring</span>
+            <span style="color: {% if result.repeated_pattern %}var(--accent-warning){% else %}var(--accent-success){% endif %}; font-weight: 700;">{% if result.repeated_pattern %}⚠ Detected{% else %}✓ Clear{% endif %}</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Warnings Section -->
+    {% if result.warnings %}
+    <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+      <h4 style="color: var(--accent-danger); font-size: 0.95rem; margin-bottom: 0.5rem;">⚠ Security Warnings:</h4>
+      <ul style="padding-left: 1.25rem; color: #fca5a5; font-size: 0.9rem;">
+        {% for warning in result.warnings %}
+        <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Suggestions Section -->
+    {% if result.suggestions %}
+    <div style="background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+      <h4 style="color: var(--accent-warning); font-size: 0.95rem; margin-bottom: 0.5rem;">💡 Suggestions for Improvement:</h4>
+      <ul style="padding-left: 1.25rem; color: #fde68a; font-size: 0.9rem;">
+        {% for suggestion in result.suggestions %}
+        <li>{{ suggestion }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <p class="disclaimer-note" style="margin-top: 1rem; text-align: center;">
+      Strength and entropy are educational estimates and do not guarantee real-world password security.
+    </p>
+
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

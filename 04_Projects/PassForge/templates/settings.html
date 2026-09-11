@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings | PassForge{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 600px; margin: 1rem auto;">
+  <div class="panel-header">
+    <h1 class="panel-title">Account Metadata & Settings</h1>
+  </div>
+
+  <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+      <span style="color: var(--text-muted);">Username</span>
+      <strong>{{ user.username }}</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+      <span style="color: var(--text-muted);">Email Address</span>
+      <strong>{{ user.email }}</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+      <span style="color: var(--text-muted);">Account Role</span>
+      <span class="badge {% if user.role == 'ADMIN' %}badge-warning{% else %}badge-info{% endif %}">{{ user.role }}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+      <span style="color: var(--text-muted);">Created Timestamp</span>
+      <span style="font-size: 0.85rem; color: var(--text-dim);">{{ user.created_at[:19] }}</span>
+    </div>
+  </div>
+
+  <div style="background-color: rgba(197, 160, 89, 0.1); border: 1px solid rgba(197, 160, 89, 0.3); padding: 1rem; border-radius: var(--radius-sm);">
+    <h3 style="font-size: 0.95rem; color: var(--accent-gold); margin-bottom: 0.35rem;">🛡️ Authentication Hashing Metadata</h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">
+      Your account password is derived into a 16-byte random salt and PBKDF2-HMAC-SHA256 hash (600,000 iterations). Your vault key is derived in-memory during active sessions.
+    </p>
+  </div>
+</div>
+{% endblock %}

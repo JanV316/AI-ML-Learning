@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}PassForge - Personal Credential Vault & Security Toolkit{% endblock %}
+
+{% block content %}
+<div style="max-width: 850px; margin: 2rem auto 4rem auto; text-align: center;">
+  <span class="badge badge-info" style="margin-bottom: 1rem;">Privacy-Focused Architecture</span>
+  <h1 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main);">
+    PassForge Personal Credential Vault & Security Assessment
+  </h1>
+  <p style="font-size: 1.05rem; color: var(--text-muted); line-height: 1.6; max-width: 700px; margin: 0 auto 2rem auto;">
+    A local, modular password security toolkit and personal credential vault.
+    Generate secure passwords, analyze pattern weaknesses, and manage encrypted credentials safely.
+  </p>
+
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding: 0.75rem 1.75rem;">Get Started — Create Account</a>
+    <a href="{{ url_for('login') }}" class="btn btn-secondary" style="padding: 0.75rem 1.75rem;">Sign In</a>
+  </div>
+</div>
+
+<!-- Architecture & Security Features Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+  
+  <div class="panel">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-gold);">🔒</div>
+    <h3 class="panel-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Personal Credential Vault</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">
+      Vault credentials are encrypted symmetrically using Fernet (AES-128-CBC + HMAC-SHA256) with keys derived from your password. Plaintext secrets are never stored on disk.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-gold);">📊</div>
+    <h3 class="panel-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Password Health Assessment</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">
+      Evaluates theoretical entropy, rule-based scoring, common dictionary matches, repeated characters, and password reuse across saved credentials.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-gold);">🔑</div>
+    <h3 class="panel-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Secure Password Generator</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">
+      Uses Python's cryptographically secure <code>secrets</code> module to generate random passwords with enforced character set diversity.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-gold);">🛡️</div>
+    <h3 class="panel-title" style="font-size: 1.1rem; margin-bottom: 0.5rem;">Salting & PBKDF2 Hashing</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">
+      User authentication passwords use PBKDF2-HMAC-SHA256 with 600,000 iterations and 16-byte random salts. Verification occurs in constant time.
+    </p>
+  </div>
+
+</div>
+{% endblock %}

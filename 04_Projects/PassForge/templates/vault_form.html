@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Credential' if action == 'edit' else 'Add Credential' }} | PassForge{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 550px; margin: 1rem auto;">
+  <div class="panel-header">
+    <h1 class="panel-title">{{ 'Edit Credential' if action == 'edit' else 'Add New Credential' }}</h1>
+    <a href="{{ url_for('vault') }}" class="btn btn-secondary btn-sm">&larr; Back to Vault</a>
+  </div>
+
+  {% if error %}
+  <div class="flash-alert flash-danger">{{ error }}</div>
+  {% endif %}
+
+  <form action="{{ url_for('vault_edit', cred_id=cred_id) if action == 'edit' else url_for('vault_add') }}" method="POST">
+    <div class="form-group">
+      <label for="service_name" class="form-label">Service / Website Name:</label>
+      <input type="text" id="service_name" name="service_name" class="form-control" placeholder="e.g. GitHub, Google, Amazon..." value="{{ service_name or '' }}" required autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="username_or_email" class="form-label">Username or Email:</label>
+      <input type="text" id="username_or_email" name="username_or_email" class="form-control" placeholder="User ID or login email..." value="{{ username_or_email or '' }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="credPassword" class="form-label">Vault Password:</label>
+      <div style="position: relative;">
+        <input type="password" id="credPassword" name="password" class="form-control" placeholder="{{ 'Leave blank to keep existing password...' if action == 'edit' else 'Enter password to encrypt...' }}" value="{{ preset_password or '' }}" {% if action == 'add' %}required{% endif %}>
+        <button type="button" onclick="togglePasswordInput('credPassword', this)" style="position: absolute; right: 0.75rem; top: 0.6rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem;">Show</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="url" class="form-label">Website URL (Optional):</label>
+      <input type="text" id="url" name="url" class="form-control" placeholder="https://..." value="{{ url or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="notes" class="form-label">Notes (Optional):</label>
+      <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Security questions, recovery codes, or notes...">{{ notes or '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width: 100%;">{{ 'Save Changes' if action == 'edit' else 'Encrypt & Save Credential' }}</button>
+  </form>
+</div>
+{% endblock %}
